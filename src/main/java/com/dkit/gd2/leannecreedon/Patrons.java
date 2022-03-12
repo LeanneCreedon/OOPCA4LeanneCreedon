@@ -8,8 +8,8 @@ public class Patrons
 
     private final ArrayList<Patron> patronList;
 
-    public Patrons(ArrayList<Patron> patronList)
+    public Patrons()
     {
-        this.patronList = patronList;
+        this.patronList = new ArrayList<>();
     }
 }

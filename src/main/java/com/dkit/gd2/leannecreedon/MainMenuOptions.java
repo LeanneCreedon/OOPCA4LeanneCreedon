@@ -5,8 +5,8 @@ public enum MainMenuOptions
     /* SYSTEM MENU OPTIONS - TEMPORARY! */
 
     PRINT_MENU,
+    DISPLAY_BOOKS,
     RETRIEVE_BOOK_BY_KEY,
-    DISPLAY_BOOKS_TREE_MAP,
-    PRINT_BOOKS_ORDER,
+    PART6,
     QUIT;
 }

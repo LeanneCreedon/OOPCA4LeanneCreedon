@@ -1,29 +1,29 @@
 package com.dkit.gd2.leannecreedon;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.PriorityQueue;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Books
 {
     /* Manager class for books */
 
     private final ArrayList<Book> bookList;
-    private final HashMap<String, Book> bookHashMap;
+    private final HashMap<Integer, Book> bookHashMap;
     private final TreeMap<Integer, Book> bookTreeMap;
-    private final PriorityQueue<Book> bookAlphabeticalOrder;
+    private final PriorityQueue<Book> bookPriorityQueue;
+    private final PriorityQueue<Integer> bookPriorityQueueInt;
 
     public Books()
     {
         this.bookList = new ArrayList<>();
         this.bookHashMap = new HashMap<>();
         this.bookTreeMap = new TreeMap<>();
-        this.bookAlphabeticalOrder = new PriorityQueue<>(new OrderBooksByTitleComparator());
+        this.bookPriorityQueue = new PriorityQueue<>(new OrderBooksByTitleComparator());
+        this.bookPriorityQueueInt = new PriorityQueue<>();
     }
 
     public void add10Books()
     {
+        // Creating 10 Book objects
         Book harryPotter = new Book(1, "Harry Potter and the Chamber of Secrets", "J.K Rolling",
                 "On-Shelf", "Fantasy", 1999, 6,2, "Arthur A. Levine", 4.43);
 
@@ -46,13 +46,16 @@ public class Books
                 "On-Shelf", "Fantasy", 1950, 10, 16, "HarperCollins", 4.23);
 
         Book charlotteWeb = new Book(8, "Charlotte's Web", "E.B White",
-                "DUE 02-04-22", "Children's", 1952, 10, 15, "HarperCollins", 4.18);
+                "DUE 02-04-22", "Children's", 1952, 5, 15, "HarperCollins", 4.18);
 
         Book theBFG = new Book(9, "The BFG", "Roald Dahl",
                 "On-Shelf", "Children's", 1982, 11, 1, "Puffin Books", 4.22);
 
         Book toKillAMockingBird = new Book(10, "To Kill a Mocking bird", "Harper Lee",
                 "On-Shelf", "Fantasy", 1960, 7, 11, "Harper Perennial Modern Classics", 4.27);
+
+        Book charlotteWeb2 = new Book(11, "Charlotte's Web", "E.B White",
+                "DUE 02-04-22", "Children's", 1952, 10, 15, "HarperCollins", 4.18);
 
         // Adding the objects into the ArrayList
         bookList.add(harryPotter);
@@ -65,51 +68,92 @@ public class Books
         bookList.add(charlotteWeb);
         bookList.add(theBFG);
         bookList.add(toKillAMockingBird);
+        bookList.add(charlotteWeb2);
 
         // Adding the objects into the HashMap
-        bookHashMap.put("A", harryPotter); //Not sure what key to use, just have letter for now
-        bookHashMap.put("B", hungerGames);
-        bookHashMap.put("C", divergent);
-        bookHashMap.put("D", faultInOurStars);
-        bookHashMap.put("E", twilight);
-        bookHashMap.put("F", theHobbit);
-        bookHashMap.put("G", narnia);
-        bookHashMap.put("H", charlotteWeb);
-        bookHashMap.put("I", theBFG);
-        bookHashMap.put("J", toKillAMockingBird);
+        for(Book book : bookList)
+        {
+            bookHashMap.put(book.getId(), book);
+        }
 
         // Adding the objects into the TreeMap
-        bookTreeMap.put(101, harryPotter); //Not sure what key to use, just have number for now
-        bookTreeMap.put(102, hungerGames);
-        bookTreeMap.put(103, divergent);
-        bookTreeMap.put(104, faultInOurStars);
-        bookTreeMap.put(105, twilight);
-        bookTreeMap.put(106, theHobbit);
-        bookTreeMap.put(107, narnia);
-        bookTreeMap.put(108, charlotteWeb);
-        bookTreeMap.put(109, theBFG);
-        bookTreeMap.put(110, toKillAMockingBird);
+        for(Book book : bookList)
+        {
+            bookTreeMap.put(book.getId(), book);
+        }
 
         // Adding books to Priority Queue
-        bookAlphabeticalOrder.add(harryPotter);
-        bookAlphabeticalOrder.add(hungerGames);
-        bookAlphabeticalOrder.add(divergent);
-        bookAlphabeticalOrder.add(faultInOurStars);
-        bookAlphabeticalOrder.add(twilight);
-        bookAlphabeticalOrder.add(theHobbit);
-        bookAlphabeticalOrder.add(narnia);
-        bookAlphabeticalOrder.add(charlotteWeb);
-        bookAlphabeticalOrder.add(theBFG);
-        bookAlphabeticalOrder.add(toKillAMockingBird);
+        // Alphabetical ordering
+        bookPriorityQueue.addAll(bookList);
     }
 
-    public void printAllBooks()
+    public void priorityQueueIntRemoveDisplay()
     {
-        System.out.println("\n-------------------- ArrayList ------------------------\n");
-        // Printing out books using ArrayList
-        if(!(bookList.isEmpty()))
+        // Part 6
+        // PriorityQueue integer
+        int thirdPriority1 = bookList.get(4).getDatePublished().getMonthValue();
+        int thirdPriority2 = bookList.get(4).getDatePublished().getMonthValue();
+
+        int secondPriority1 = bookList.get(2).getDatePublished().getMonthValue();
+        int secondPriority2 = bookList.get(2).getDatePublished().getMonthValue();
+
+        int topPriority = bookList.get(7).getDatePublished().getMonthValue();
+
+        // Adding elements to PriorityQueue
+        bookPriorityQueueInt.add(thirdPriority1);
+        bookPriorityQueueInt.add(thirdPriority2);
+
+        bookPriorityQueueInt.add(secondPriority1);
+        bookPriorityQueueInt.add(secondPriority2);
+
+        System.out.println("Removing and displaying one element");
+
+        // Remove and display one element
+        System.out.println("Item to remove " + thirdPriority1 + ", Remove success = " + bookPriorityQueueInt.remove(thirdPriority1));
+
+        // Adding one top priority element
+        bookPriorityQueueInt.add(topPriority);
+
+        System.out.println("Removing and displaying all elements in top priority order using book month of publish priority queue");
+
+        // Remove and display all elements in top priority order
+        while(!bookPriorityQueueInt.isEmpty())
         {
-            System.out.println("Printing all details of books: -\n");
+            System.out.println(bookPriorityQueueInt.poll());
+        }
+
+        System.out.println("Displaying all items in priority queue " + bookPriorityQueueInt);
+    }
+
+    public boolean findBookUsingKey(int userKey)
+    {
+        for(int key : bookHashMap.keySet())
+        {
+            if(key == userKey)
+            {
+                System.out.println(key + " : " + bookHashMap.get(key));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void displayByTitleThenMonth(PriorityQueue<Book> books)
+    {
+        System.out.println("\n----- PriorityQueue -----\n");
+
+        while(!books.isEmpty())
+        {
+            System.out.println(books.poll());
+        }
+    }
+
+    private void displayArrayList(ArrayList<Book> books)
+    {
+        System.out.println("\n----- ArrayList -----\n");
+        
+        if(!(books.isEmpty()))
+        {
             System.out.printf(Colours.BOLD+"%-8s%-50s%-25s%-25s%-25s%-20s%-35s%s%n", "ID", "Title", "Author",
                     "Status", "Genre", "Date_Published", "Publisher", "Rating" + Colours.RESET);
 
@@ -122,51 +166,34 @@ public class Books
         {
             System.out.println(Colours.RED + "No Books in the system." + Colours.RESET);
         }
-
-        // Printing out books using HashMap
-        System.out.println("\n-------------------- HashMap ------------------------\n");
-        for(String key : bookHashMap.keySet())
-        {
-            System.out.println(key + " : " + bookHashMap.get(key));
-        }
-
-        System.out.println("\n-------------------- TreeMap ------------------------\n");
-        for(int key : bookTreeMap.keySet())
-        {
-            System.out.println(key + " : " + bookTreeMap.get(key));
-        }
     }
-
-    public boolean findBookUsingKey(String userKey)
+    
+    private void displayHashMap(HashMap<Integer, Book> books)
     {
-        for(String key : bookHashMap.keySet())
+        System.out.println("\n--- HashMap ---\n");
+        for(int key : books.keySet())
         {
-            if(key.equalsIgnoreCase(userKey))
-            {
-                System.out.println(key + " : " + bookHashMap.get(key));
-                return true;
-            }
+            System.out.println(key + " : " + books.get(key));
         }
-        return false;
     }
 
-    public void displayBooksFromTreeMap()
+    private void displayTreeMap(TreeMap<Integer, Book> books)
     {
         System.out.println("\n--- TreeMap ---\n");
-        for(int key : bookTreeMap.keySet())
+        for(int key : books.keySet())
         {
-            System.out.println(key + " : " + bookTreeMap.get(key));
+            System.out.println(key + " : " + books.get(key));
         }
     }
 
-    public void printAlphabeticalOrder()
+    // Display method to print out all books using each different
+    // Interface type
+    public void display()
     {
-        System.out.println("\n--- PriorityQueue ---\n");
-
-        while(!bookAlphabeticalOrder.isEmpty())
-        {
-            System.out.println(bookAlphabeticalOrder.poll());
-        }
+        displayArrayList(bookList);
+        displayHashMap(bookHashMap);
+        displayTreeMap(bookTreeMap);
+        displayByTitleThenMonth(bookPriorityQueue);
     }
 
 }

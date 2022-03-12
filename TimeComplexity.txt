@@ -1,0 +1,26 @@
+Data Structures: ArrayList<Book>, HashMap<Integer, Book>, TreeMap<Integer, Book>, PriorityQueue<Integer>, PriorityQueue<Book>
+
+Operations performed:
+
+ArrayList =>
+1. For loop that prints out all books in list. Time Complexity = O(n).
+
+HashMap =>
+1. For loop that adds all books from ArrayList to the HashMap. Time Complexity = O(n).
+
+2. For loop that goes through HashMap and looks for a key that the user entered.
+   It then prints out the book with the same key or a message to say no key found. Time Complexity = O(log(n)).
+
+3. For loop that goes through HashMap and prints out all books. Time Complexity = O(n).
+
+TreeMap =>
+1. For loop that adds all books from ArrayList to the TreeMap. Time Complexity = O(n).
+
+2. For loop that goes through TreeMap and prints out all books. Time Complexity = O(n).
+
+PriorityQueue<Integer> =>
+1. While loop that goes through PriorityQueue while it's not empty, and removes and prints out all elements in PriorityQueue using poll(). Time Complexity = O(log(n)).
+
+PriorityQueue<Book> =>
+1. While loop that goes through PriorityQueue while it's not empty, and removes and prints out all elements in PriorityQueue using poll().
+   The books will be printed in order of title then month of publish using a Comparator. Time Complexity = O(log(n)).

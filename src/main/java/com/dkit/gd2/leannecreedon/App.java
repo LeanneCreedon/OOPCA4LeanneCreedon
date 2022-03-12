@@ -8,13 +8,17 @@ import java.util.Scanner;
  * Colours & Text Decoration help => https://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
  * Menu structure help => from my CA1 Project
  * Researched => the Libraries Ireland online catalogue for help with understanding how online library systems work
+ * Prithvi helped me => with understanding the PriorityQueue and a few other parts of the assignment that I was struggling with
+ * Help with Comparator for comparing string then int => https://stackoverflow.com/questions/4805606/how-to-sort-by-two-fields-in-java
  *
- * CA3 - Leanne Creedon
+ *
+ * CA5 - Leanne Creedon
  */
 public class App 
 {
     private static final Scanner keyboard = new Scanner(System.in);
     private static final Books books = new Books();
+    private static final Patrons patrons = new Patrons();
 
     public static void main( String[] args )
     {
@@ -27,10 +31,10 @@ public class App
     {
         System.out.println("Temporary menu system!");
         System.out.println(Colours.YELLOW + Colours.BOLD + Colours.UNDERLINE + "Main Menu" + Colours.RESET + "\n"
-                + "0. print out all books(ArrayList,HashMap,TreeMap)" + "\n"
-                + "1. Retrieve book by key(HashMap)" + "\n"
-                + "2. display books in TreeMap"+ "\n"
-                + "3. display books in Alphabetical order(PriorityQueue)"+ "\n"
+                + "0. print menu" + "\n"
+                + "1. display books (ArrayList, HashMap, TreeMap, PriorityQueue)" + "\n"
+                + "2. Retrieve book by key (HashMap)" + "\n"
+                + "3. Part 6 - PriorityQueueInt, Remove/Display" + "\n"
                 + "4. Exit");
     }
 
@@ -43,22 +47,22 @@ public class App
         {
             try
             {
-                System.out.print("\nEnter choice >>> ");
+                System.out.print("\nEnter choice (0 = print menu) >>> ");
                 selectedOption = MainMenuOptions.values()[Integer.parseInt(keyboard.nextLine().trim())];
 
                 switch (selectedOption)
                 {
                     case PRINT_MENU:
-                        books.printAllBooks();
+                        printMainMenu();
+                        break;
+                    case DISPLAY_BOOKS:
+                        books.display();
                         break;
                     case RETRIEVE_BOOK_BY_KEY:
                         retrieveBookByKey();
                         break;
-                    case DISPLAY_BOOKS_TREE_MAP:
-                        books.displayBooksFromTreeMap();
-                        break;
-                    case PRINT_BOOKS_ORDER:
-                        books.printAlphabeticalOrder();
+                    case PART6:
+                        books.priorityQueueIntRemoveDisplay();
                         break;
                     case QUIT:
                         System.out.println(Colours.BLUE + "Shutting down the system....." + Colours.RESET);
@@ -76,7 +80,7 @@ public class App
 
     private static void retrieveBookByKey()
     {
-        String key = getUserInput("Enter key: ");
+        int key = getUserInputInteger("Enter key: ");
 
         if(!(books.findBookUsingKey(key)))
         {
