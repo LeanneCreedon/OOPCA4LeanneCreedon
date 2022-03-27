@@ -1,11 +1,11 @@
-package com.dkit.gd2.leannecreedon;
+package com.dkit.gd2.leannecreedon.DTO;
 
 import java.time.LocalDate;
 
 public class Book
 {
     /* Attributes */
-    private final int id;   // Will be auto increment when database system is set up
+    private final int id;   // Auto increment id is set up in database
     private final String title;
     private final String author;
     private final String status;
@@ -25,6 +25,19 @@ public class Book
         this.status = status;
         this.genre = genre;
         this.datePublished = LocalDate.of(year, month, day);
+        this.publisher = publisher;
+        this.rating = rating;
+    }
+
+    public Book(int id, String title, String author, String status, String genre, LocalDate datePublished,
+                String publisher, double rating)
+    {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.status = status;
+        this.genre = genre;
+        this.datePublished = datePublished;
         this.publisher = publisher;
         this.rating = rating;
     }
@@ -78,4 +91,5 @@ public class Book
                 ", rating=" + rating +
                 '}';
     }
+
 }

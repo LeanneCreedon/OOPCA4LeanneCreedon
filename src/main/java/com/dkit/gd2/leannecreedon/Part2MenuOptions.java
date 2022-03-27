@@ -1,11 +1,10 @@
 package com.dkit.gd2.leannecreedon;
 
-public enum MainMenuOptions
+public enum Part2MenuOptions
 {
     /* SYSTEM MENU OPTIONS - TEMPORARY! */
-
     PRINT_MENU,
-    PART1_MENU,
-    PART2_MENU,
-    QUIT;
+    PRINT_ALL_BOOKS,
+    CHECK_BOOK_FOUND,
+    BACK_TO_MAIN;
 }

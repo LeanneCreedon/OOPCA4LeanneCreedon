@@ -1,5 +1,10 @@
 package com.dkit.gd2.leannecreedon;
 
+import com.dkit.gd2.leannecreedon.DAO.IBookInterface;
+import com.dkit.gd2.leannecreedon.DAO.MySqlBookDAO;
+import com.dkit.gd2.leannecreedon.DTO.Book;
+import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
+
 import java.util.Scanner;
 
 /**
@@ -16,6 +21,7 @@ import java.util.Scanner;
  */
 public class App 
 {
+    private static final IBookInterface IBookDAO = new MySqlBookDAO();
     private static final Scanner keyboard = new Scanner(System.in);
     private static final Books books = new Books();
     private static final Patrons patrons = new Patrons();
@@ -23,7 +29,6 @@ public class App
     public static void main( String[] args )
     {
         System.out.println( "-- " + Colours.BOLD + "Library System" + Colours.RESET + " --\n");
-        books.add10Books();
         mainMenu();
     }
 
@@ -31,11 +36,28 @@ public class App
     {
         System.out.println("Temporary menu system!");
         System.out.println(Colours.YELLOW + Colours.BOLD + Colours.UNDERLINE + "Main Menu" + Colours.RESET + "\n"
+                + "1. Part1 Menu" + "\n"
+                + "2. Part2 Menu" + "\n"
+                + "3. Exit");
+    }
+
+    private static void printPart1Menu()
+    {
+        System.out.println(Colours.YELLOW + Colours.BOLD + Colours.UNDERLINE + "Part1 Menu" + Colours.RESET + "\n"
                 + "0. print menu" + "\n"
                 + "1. display books (ArrayList, HashMap, TreeMap, PriorityQueue)" + "\n"
                 + "2. Retrieve book by key (HashMap)" + "\n"
                 + "3. Part 6 - PriorityQueueInt, Remove/Display" + "\n"
-                + "4. Exit");
+                + "4. Back to main menu");
+    }
+
+    private static void printPart2Menu()
+    {
+        System.out.println(Colours.YELLOW + Colours.BOLD + Colours.UNDERLINE + "Part2 Menu" + Colours.RESET + "\n"
+                + "0. print menu" + "\n"
+                + "1. printAllBooks" + "\n"
+                + "2. checkBookFound" + "\n"
+                + "3. Back to main menu");
     }
 
     public static void mainMenu ()
@@ -47,23 +69,19 @@ public class App
         {
             try
             {
-                System.out.print("\nEnter choice (0 = print menu) >>> ");
+                System.out.print("\nEnter choice >>> ");
                 selectedOption = MainMenuOptions.values()[Integer.parseInt(keyboard.nextLine().trim())];
 
                 switch (selectedOption)
                 {
-                    case PRINT_MENU:
-                        printMainMenu();
-                        break;
-                    case DISPLAY_BOOKS:
-                        books.display();
-                        break;
-                    case RETRIEVE_BOOK_BY_KEY:
-                        retrieveBookByKey();
-                        break;
-                    case PART6:
-                        books.priorityQueueIntRemoveDisplay();
-                        break;
+                    case PART1_MENU:
+                        printPart1Menu();
+                        part1Menu();
+                        return;
+                    case PART2_MENU:
+                        printPart2Menu();
+                        part2Menu();
+                        return;
                     case QUIT:
                         System.out.println(Colours.BLUE + "Shutting down the system....." + Colours.RESET);
                         break;
@@ -76,6 +94,88 @@ public class App
                 System.out.println(Colours.RED + "\nPlease enter valid option" + Colours.RESET);
             }
         }
+    }
+
+    public static void part1Menu ()
+    {
+        Part1MenuOptions selectedOption = Part1MenuOptions.PRINT_MENU;
+
+        while (selectedOption != Part1MenuOptions.BACK_TO_MAIN)
+        {
+            try
+            {
+                System.out.print("\nEnter choice (0 = print menu) >>> ");
+                selectedOption = Part1MenuOptions.values()[Integer.parseInt(keyboard.nextLine().trim())];
+
+                switch (selectedOption)
+                {
+                    case PRINT_MENU:
+                        printPart1Menu();
+                        break;
+                    case DISPLAY_BOOKS:
+                        books.display();
+                        break;
+                    case RETRIEVE_BOOK_BY_KEY:
+                        retrieveBookByKey();
+                        break;
+                    case PART6:
+                        books.priorityQueueIntRemoveDisplay();
+                        break;
+                    case BACK_TO_MAIN:
+                        mainMenu();
+                        return;
+                    default:
+                        throw new Exception("Shouting message");
+                }
+            }
+            catch (Exception e)
+            {
+                System.out.println(Colours.RED + "\nPlease enter valid option" + Colours.RESET);
+            }
+        }
+    }
+
+    public static void part2Menu ()
+    {
+        Part2MenuOptions selectedOption = Part2MenuOptions.PRINT_MENU;
+
+        while (selectedOption != Part2MenuOptions.BACK_TO_MAIN)
+        {
+            try
+            {
+                System.out.print("\nEnter choice (0 = print menu) >>> ");
+                selectedOption = Part2MenuOptions.values()[Integer.parseInt(keyboard.nextLine().trim())];
+
+                switch (selectedOption)
+                {
+                    case PRINT_MENU:
+                        printPart2Menu();
+                        break;
+                    case PRINT_ALL_BOOKS:
+                        books.printAllBooks();
+                        break;
+                    case CHECK_BOOK_FOUND:
+                        searchForBook();
+                        break;
+                    case BACK_TO_MAIN:
+                        mainMenu();
+                        return;
+                    default:
+                        throw new Exception("Shouting message");
+                }
+            }
+            catch (Exception e)
+            {
+                System.out.println(Colours.RED + "\nPlease enter valid option" + Colours.RESET);
+            }
+        }
+    }
+
+    private static void searchForBook() throws DaoException
+    {
+        int bookID = getUserInputInteger("Please enter book id: ");
+        Book book = IBookDAO.findBookById(bookID);
+        books.checkBookFound(book);
     }
 
     private static void retrieveBookByKey()

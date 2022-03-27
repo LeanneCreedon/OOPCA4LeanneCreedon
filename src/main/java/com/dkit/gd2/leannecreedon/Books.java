@@ -1,5 +1,11 @@
 package com.dkit.gd2.leannecreedon;
 
+import com.dkit.gd2.leannecreedon.DAO.IBookInterface;
+import com.dkit.gd2.leannecreedon.DAO.MySqlBookDAO;
+import com.dkit.gd2.leannecreedon.DTO.Book;
+import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
+import org.omg.CORBA.CODESET_INCOMPATIBLE;
+
 import java.util.*;
 
 public class Books
@@ -19,72 +25,133 @@ public class Books
         this.bookTreeMap = new TreeMap<>();
         this.bookPriorityQueue = new PriorityQueue<>(new OrderBooksByTitleComparator());
         this.bookPriorityQueueInt = new PriorityQueue<>();
+        connectToDatabase();
     }
+
+    // PART 2 OF SPEC - METHODS
+
+    private void connectToDatabase()
+    {
+        IBookInterface IBookDAO = new MySqlBookDAO(); // Easy to switch for Mongo!
+
+        try
+        {
+            List<Book> books = IBookDAO.findAllBooks();
+
+            //Adding books from database to all datastructures in my system
+            //for part1 of spec
+            bookList.addAll(books);
+            bookPriorityQueue.addAll(bookList);
+            for(Book book : bookList) {
+                bookHashMap.put(book.getId(), book);
+            }
+            for(Book book : bookList) {
+                bookTreeMap.put(book.getId(), book);
+            }
+
+            if(books.isEmpty())
+            {
+                System.out.println(Colours.RED + "There are no books" + Colours.RESET);
+            }
+
+        }
+        catch (DaoException de)
+        {
+            System.out.println(de.getMessage());
+        }
+    }
+
+    public void printAllBooks()
+    {
+        for(Book book : bookList)
+        {
+            System.out.println(book);
+        }
+    }
+
+    public boolean checkBookFound(Book book)
+    {
+        if(book != null)
+        {
+            System.out.println(Colours.GREEN + "Book found: "  + Colours.RESET + book);
+            return true;
+        }
+        else
+        {
+            System.out.println(Colours.RED + "No book with that id found" + Colours.RESET);
+            return false;
+        }
+    }
+
+    // PART 1 OF SPEC - METHODS
 
     public void add10Books()
     {
+
+        /* DON'T NEED THIS METHOD ANYMORE! */
+
         // Creating 10 Book objects
-        Book harryPotter = new Book(1, "Harry Potter and the Chamber of Secrets", "J.K Rolling",
-                "On-Shelf", "Fantasy", 1999, 6,2, "Arthur A. Levine", 4.43);
-
-        Book hungerGames = new Book(2, "The Hunger Games Catching Fire", "Suzanne Collins",
-                "On-Shelf", "Dystopian", 2009, 9, 1, "Scholastic Press", 4.30);
-
-        Book divergent = new Book(3, "Divergent", "Veronica Roth",
-                "DUE 04-03-22", "Dystopian", 2012, 2, 8, "Katherine Tegen Books", 4.17);
-
-        Book faultInOurStars = new Book(4, "The Fault in our stars", "John Green",
-                "On-Shelf", "Realistic novel", 2012, 1, 10, "Dutton Books", 4.17);
-
-        Book twilight = new Book(5, "Twilight", "Stephenie Meyer",
-                "On-Shelf", "Romance", 2006, 9, 6, "Little, Brown and Company", 3.62);
-
-        Book theHobbit = new Book(6, "The Hobbit", "J.R.R Tolkien",
-                "On-Shelf", "Fantasy", 2002, 8, 15, "Houghton Mifflin", 4.28);
-
-        Book narnia = new Book(7, "The Lion the Witch and the Wardrobe", "C.S Louis",
-                "On-Shelf", "Fantasy", 1950, 10, 16, "HarperCollins", 4.23);
-
-        Book charlotteWeb = new Book(8, "Charlotte's Web", "E.B White",
-                "DUE 02-04-22", "Children's", 1952, 5, 15, "HarperCollins", 4.18);
-
-        Book theBFG = new Book(9, "The BFG", "Roald Dahl",
-                "On-Shelf", "Children's", 1982, 11, 1, "Puffin Books", 4.22);
-
-        Book toKillAMockingBird = new Book(10, "To Kill a Mocking bird", "Harper Lee",
-                "On-Shelf", "Fantasy", 1960, 7, 11, "Harper Perennial Modern Classics", 4.27);
-
-        Book charlotteWeb2 = new Book(11, "Charlotte's Web", "E.B White",
-                "DUE 02-04-22", "Children's", 1952, 10, 15, "HarperCollins", 4.18);
+//        Book harryPotter = new Book(1, "Harry Potter and the Chamber of Secrets", "J.K Rolling",
+//                "On-Shelf", "Fantasy", 1999, 6,2, "Arthur A. Levine", 4.43);
+//
+//        Book hungerGames = new Book(2, "The Hunger Games Catching Fire", "Suzanne Collins",
+//                "On-Shelf", "Dystopian", 2009, 9, 1, "Scholastic Press", 4.30);
+//
+//        Book divergent = new Book(3, "Divergent", "Veronica Roth",
+//                "DUE 04-03-22", "Dystopian", 2012, 2, 8, "Katherine Tegen Books", 4.17);
+//
+//        Book faultInOurStars = new Book(4, "The Fault in our stars", "John Green",
+//                "On-Shelf", "Realistic novel", 2012, 1, 10, "Dutton Books", 4.17);
+//
+//        Book twilight = new Book(5, "Twilight", "Stephenie Meyer",
+//                "On-Shelf", "Romance", 2006, 9, 6, "Little, Brown and Company", 3.62);
+//
+//        Book theHobbit = new Book(6, "The Hobbit", "J.R.R Tolkien",
+//                "On-Shelf", "Fantasy", 2002, 8, 15, "Houghton Mifflin", 4.28);
+//
+//        Book narnia = new Book(7, "The Lion the Witch and the Wardrobe", "C.S Louis",
+//                "On-Shelf", "Fantasy", 1950, 10, 16, "HarperCollins", 4.23);
+//
+//        Book charlotteWeb = new Book(8, "Charlotte's Web", "E.B White",
+//                "DUE 02-04-22", "Children's", 1952, 5, 15, "HarperCollins", 4.18);
+//
+//        Book theBFG = new Book(9, "The BFG", "Roald Dahl",
+//                "On-Shelf", "Children's", 1982, 11, 1, "Puffin Books", 4.22);
+//
+//        Book toKillAMockingBird = new Book(10, "To Kill a Mocking bird", "Harper Lee",
+//                "On-Shelf", "Fantasy", 1960, 7, 11, "Harper Perennial Modern Classics", 4.27);
+//
+//        Book charlotteWeb2 = new Book(11, "Charlotte's Web", "E.B White",
+//                "DUE 02-04-22", "Children's", 1952, 10, 15, "HarperCollins", 4.18);
 
         // Adding the objects into the ArrayList
-        bookList.add(harryPotter);
-        bookList.add(hungerGames);
-        bookList.add(divergent);
-        bookList.add(faultInOurStars);
-        bookList.add(twilight);
-        bookList.add(theHobbit);
-        bookList.add(narnia);
-        bookList.add(charlotteWeb);
-        bookList.add(theBFG);
-        bookList.add(toKillAMockingBird);
-        bookList.add(charlotteWeb2);
+//        bookList.add(harryPotter);
+//        bookList.add(hungerGames);
+//        bookList.add(divergent);
+//        bookList.add(faultInOurStars);
+//        bookList.add(twilight);
+//        bookList.add(theHobbit);
+//        bookList.add(narnia);
+//        bookList.add(charlotteWeb);
+//        bookList.add(theBFG);
+//        bookList.add(toKillAMockingBird);
+//        bookList.add(charlotteWeb2);
 
         // Adding the objects into the HashMap
-        for(Book book : bookList)
-        {
-            bookHashMap.put(book.getId(), book);
-        }
-
-        // Adding the objects into the TreeMap
-        for(Book book : bookList)
-        {
-            bookTreeMap.put(book.getId(), book);
-        }
-
-        // Adding books to Priority Queue
-        // Alphabetical ordering
-        bookPriorityQueue.addAll(bookList);
+//        for(Book book : bookList)
+//        {
+//            bookHashMap.put(book.getId(), book);
+//        }
+//
+//        // Adding the objects into the TreeMap
+//        for(Book book : bookList)
+//        {
+//            bookTreeMap.put(book.getId(), book);
+//        }
+//
+//        // Adding books to Priority Queue
+//        // Alphabetical ordering
+//        bookPriorityQueue.addAll(bookList);
     }
 
     public void priorityQueueIntRemoveDisplay()
@@ -138,9 +205,15 @@ public class Books
         return false;
     }
 
-    private void displayByTitleThenMonth(PriorityQueue<Book> books)
+    private void displayByTitleThenYear(PriorityQueue<Book> books)
     {
         System.out.println("\n----- PriorityQueue -----\n");
+
+        // Testing the ordering of the comparator
+        Book charlotteWeb2 = new Book(11, "Charlotte's Web", "E.B White",
+                "DUE 02-04-22", "Children's", 2001, 10, 15, "HarperCollins", 4.18);
+
+        bookPriorityQueue.add(charlotteWeb2);
 
         while(!books.isEmpty())
         {
@@ -193,7 +266,7 @@ public class Books
         displayArrayList(bookList);
         displayHashMap(bookHashMap);
         displayTreeMap(bookTreeMap);
-        displayByTitleThenMonth(bookPriorityQueue);
+        displayByTitleThenYear(bookPriorityQueue);
     }
 
 }

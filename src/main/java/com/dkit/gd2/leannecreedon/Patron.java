@@ -30,13 +30,13 @@ public class Patron
     /* CONSTRUCTORS */
 
     // Creating an account
-    public Patron(String firstName, String lastName, LocalDate dateOfBirth, String gender,
+    public Patron(String firstName, String lastName, int year, int month, int day, String gender,
                   String addressLine1, String addressLine2, String county, String eirCode,
                   String email, String confirmEmail, int mobile)
     {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.dateOfBirth = dateOfBirth;
+        this.dateOfBirth = LocalDate.of(year, month, day);
         this.gender = gender;
         this.addressLine1 = addressLine1;
         this.addressLine2 = addressLine2;
