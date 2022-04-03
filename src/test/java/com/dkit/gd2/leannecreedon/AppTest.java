@@ -1,12 +1,16 @@
 package com.dkit.gd2.leannecreedon;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import com.dkit.gd2.leannecreedon.DAO.IBookInterface;
 import com.dkit.gd2.leannecreedon.DAO.MySqlBookDAO;
 import com.dkit.gd2.leannecreedon.DTO.Book;
+import com.dkit.gd2.leannecreedon.DTO.Patron;
 import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * Unit tests for my Library System
@@ -41,7 +45,7 @@ public class AppTest
         System.out.println("\nTest : construction of Patron object.");
         Patron patron= new Patron("Mary", "O'Brain", 1999, 6, 3, "Female",
                 "17 St James Avenue", "Drumcondra", "Dublin", "D03HF43",
-                "marysnottoobad@hotmail.com", "marysnottoobad@hotmail.com", 856642286);
+                "marysnottoobad@hotmail.com", "marysnottoobad@hotmail.com", "856642286", 0, 0);
         assertEquals("Mary", patron.getFirstName());
         assertEquals("O'Brain", patron.getLastName());
         assertEquals(1999, patron.getDateOfBirth().getYear());
@@ -55,6 +59,8 @@ public class AppTest
         assertEquals("marysnottoobad@hotmail.com", patron.getEmail());
         assertEquals("marysnottoobad@hotmail.com", patron.getConfirmEmail());
         assertEquals(856642286, patron.getMobile());
+        assertEquals(0, patron.getPin());
+        assertEquals(0, patron.getLibraryCardNumber());
     }
 
     // Test patron login.
@@ -91,6 +97,15 @@ public class AppTest
         boolean expectedResult = false;
         boolean result = instance.checkBookFound(book);
         assertEquals(expectedResult, result);
+    }
+
+    // Test findAllBooks not null.
+    @Test
+    public void findAllBooks() throws DaoException
+    {
+        System.out.println("\nTest : findAllBooks() method.");
+        List<Book> books = IBookDAO.findAllBooks();
+        assertNotNull(books);
     }
 
 }

@@ -2,11 +2,9 @@ package com.dkit.gd2.leannecreedon.DAO;
 
 import com.dkit.gd2.leannecreedon.DTO.Book;
 import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
+import org.json.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -39,7 +37,7 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
                 int id = rs.getInt("id");
                 String title = rs.getString("title");
                 String author = rs.getString("author");
-                String status = rs.getString("author");
+                String status = rs.getString("status");
                 String genre = rs.getString("genre");
                 Date dateP = rs.getDate("date_published");
                 String publisher = rs.getString("publisher");
@@ -107,7 +105,7 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
                 int bookId = rs.getInt("id");
                 String title = rs.getString("title");
                 String author = rs.getString("author");
-                String status = rs.getString("author");
+                String status = rs.getString("status");
                 String genre = rs.getString("genre");
                 Date dateP = rs.getDate("date_published");
                 String publisher = rs.getString("publisher");
@@ -148,5 +146,305 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
             }
         }
         return b;
+    }
+
+    @Override
+    public void deleteBookById(int id) throws DaoException
+    {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Book b = null;
+
+        try
+        {
+            // Get a connection to the database
+            con = this.getConnection();
+            String query = "delete from books where id = ?";
+            ps = con.prepareStatement(query);
+            ps.setInt(1, id);
+
+            // Use the prepared statement to execute the sql
+            ps.executeUpdate();
+        }
+
+        catch(SQLException sqe)
+        {
+            throw new DaoException("findAllBooks() " + sqe.getMessage());
+        }
+        finally
+        {
+            try
+            {
+                if(rs != null)
+                {
+                    rs.close();
+                }
+                if(ps != null)
+                {
+                    ps.close();
+                }
+                if(con != null)
+                {
+                    freeConnection(con);
+                }
+            }
+            catch(SQLException sqe)
+            {
+                throw new DaoException("findAllBooks() " + sqe.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void insertABook(Book book) throws DaoException
+    {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try
+        {
+            // Get a connection to the database
+            con = this.getConnection();
+            String query = "INSERT INTO books(title, author, status, genre, date_published, publisher, rating) values(?, ?, ?, ?, ?, ?, ?)";
+            ps = con.prepareStatement(query);
+
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getStatus());
+            ps.setString(4, book.getGenre());
+            ps.setDate(5,java.sql.Date.valueOf(book.getDatePublished()));
+            ps.setString(6, book.getPublisher());
+            ps.setDouble(7, book.getRating());
+
+            // Use the prepared statement to execute the sql
+            ps.executeUpdate();
+        }
+        catch(SQLException sqe)
+        {
+            throw new DaoException("findAllBooks() " + sqe.getMessage());
+        }
+        finally
+        {
+            try
+            {
+                if(rs != null)
+                {
+                    rs.close();
+                }
+                if(ps != null)
+                {
+                    ps.close();
+                }
+                if(con != null)
+                {
+                    freeConnection(con);
+                }
+            }
+            catch(SQLException sqe)
+            {
+                throw new DaoException("findAllBooks() " + sqe.getMessage());
+            }
+        }
+    }
+
+
+    @Override
+    public List<Book> findBookUsingFilter(LocalDate from, LocalDate to) throws DaoException
+    {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<Book> dateRangeBooks = new ArrayList<>();
+        try
+        {
+            // Get a connection to the database
+            con = this.getConnection();
+            String query = "SELECT * FROM BOOKS WHERE date_published BETWEEN ? AND ?";
+            ps = con.prepareStatement(query);
+            ps.setDate(1, java.sql.Date.valueOf(from));
+            ps.setDate(2, java.sql.Date.valueOf(to));
+
+            // Use the prepared statement to execute the sql
+            rs = ps.executeQuery();
+            while(rs.next())
+            {
+                int bookId = rs.getInt("id");
+                String title = rs.getString("title");
+                String author = rs.getString("author");
+                String status = rs.getString("status");
+                String genre = rs.getString("genre");
+                Date dateP = rs.getDate("date_published");
+                String publisher = rs.getString("publisher");
+                double rating = rs.getDouble("rating");
+
+                LocalDate datePublished = Instant.ofEpochMilli(dateP.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
+                Book b = new Book(bookId, title, author, status, genre, datePublished,
+                        publisher, rating);
+                dateRangeBooks.add(b);
+            }
+        }
+        catch(SQLException sqe)
+        {
+            throw new DaoException("findAllBooks() " + sqe.getMessage());
+        }
+        finally
+        {
+            try
+            {
+                if(rs != null)
+                {
+                    rs.close();
+                }
+                if(ps != null)
+                {
+                    ps.close();
+                }
+                if(con != null)
+                {
+                    freeConnection(con);
+                }
+            }
+            catch(SQLException sqe)
+            {
+                throw new DaoException("findAllBooks() " + sqe.getMessage());
+            }
+        }
+        return dateRangeBooks;
+    }
+
+    @Override
+    public JSONArray findAllBooksJson() throws DaoException
+    {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        JSONObject bookAsJson;
+        JSONArray booksJsonArr = new JSONArray();
+        try
+        {
+            // Get a connection to the database
+            con = this.getConnection();
+            String query = "SELECT * FROM BOOKS";
+            ps = con.prepareStatement(query);
+
+            // Use the prepared statement to execute the sql
+            rs = ps.executeQuery();
+            while(rs.next())
+            {
+                int id = rs.getInt("id");
+                String title = rs.getString("title");
+                String author = rs.getString("author");
+                String status = rs.getString("status");
+                String genre = rs.getString("genre");
+                Date dateP = rs.getDate("date_published");
+                String publisher = rs.getString("publisher");
+                double rating = rs.getDouble("rating");
+                LocalDate datePublished = Instant.ofEpochMilli(dateP.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                bookAsJson = new JSONObject("{\"id\":\""+id+"\", " +
+                        "\"title\":\""+title+"\", \"author\":\""+author+"\", \"status\":\""+status+"\"," +
+                        " \"genre\":\""+genre+"\", \"date_published\":\""+datePublished+"\", \"publisher" +
+                        "\":\""+publisher+"\", \"rating\":\""+rating+"\"}");
+                booksJsonArr.put(bookAsJson);
+            }
+
+        }
+        catch(SQLException sqe)
+        {
+            throw new DaoException("findAllBooks() " + sqe.getMessage());
+        }
+        finally
+        {
+            try
+            {
+                if(rs != null)
+                {
+                    rs.close();
+                }
+                if(ps != null)
+                {
+                    ps.close();
+                }
+                if(con != null)
+                {
+                    freeConnection(con);
+                }
+            }
+            catch(SQLException sqe)
+            {
+                throw new DaoException("findAllBooks() " + sqe.getMessage());
+            }
+        }
+        return booksJsonArr;
+    }
+
+    @Override
+    public JSONObject findBookByIdJson(int id) throws DaoException
+    {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        JSONObject bookAsJson = null;
+        try
+        {
+            // Get a connection to the database
+            con = this.getConnection();
+            String query = "select * from books where id = ?";
+            ps = con.prepareStatement(query);
+            ps.setInt(1, id);
+
+            // Use the prepared statement to execute the sql
+            rs = ps.executeQuery();
+            while(rs.next())
+            {
+                int bookId = rs.getInt("id");
+                String title = rs.getString("title");
+                String author = rs.getString("author");
+                String status = rs.getString("status");
+                String genre = rs.getString("genre");
+                Date dateP = rs.getDate("date_published");
+                String publisher = rs.getString("publisher");
+                double rating = rs.getDouble("rating");
+                LocalDate datePublished = Instant.ofEpochMilli(dateP.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                bookAsJson = new JSONObject("{\"id\":\""+bookId+"\", " +
+                        "\"title\":\""+title+"\", \"author\":\""+author+"\", \"status\":\""+status+"\"," +
+                        " \"genre\":\""+genre+"\", \"date_published\":\""+datePublished+"\", \"publisher" +
+                        "\":\""+publisher+"\", \"rating\":\""+rating+"\"}");
+            }
+        }
+        catch(SQLException sqe)
+        {
+            throw new DaoException("findAllBooks() " + sqe.getMessage());
+        }
+        finally
+        {
+            try
+            {
+                if(rs != null)
+                {
+                    rs.close();
+                }
+                if(ps != null)
+                {
+                    ps.close();
+                }
+                if(con != null)
+                {
+                    freeConnection(con);
+                }
+            }
+            catch(SQLException sqe)
+            {
+                throw new DaoException("findAllBooks() " + sqe.getMessage());
+            }
+        }
+        return bookAsJson;
     }
 }

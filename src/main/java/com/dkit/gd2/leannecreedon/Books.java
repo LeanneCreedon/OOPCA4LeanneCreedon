@@ -4,7 +4,8 @@ import com.dkit.gd2.leannecreedon.DAO.IBookInterface;
 import com.dkit.gd2.leannecreedon.DAO.MySqlBookDAO;
 import com.dkit.gd2.leannecreedon.DTO.Book;
 import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
-import org.omg.CORBA.CODESET_INCOMPATIBLE;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.*;
 
@@ -25,12 +26,12 @@ public class Books
         this.bookTreeMap = new TreeMap<>();
         this.bookPriorityQueue = new PriorityQueue<>(new OrderBooksByTitleComparator());
         this.bookPriorityQueueInt = new PriorityQueue<>();
-        connectToDatabase();
+        connectToBookDatabase();
     }
 
     // PART 2 OF SPEC - METHODS
 
-    private void connectToDatabase()
+    public void connectToBookDatabase()
     {
         IBookInterface IBookDAO = new MySqlBookDAO(); // Easy to switch for Mongo!
 
@@ -69,7 +70,37 @@ public class Books
         }
     }
 
+    public void printBookList(List<Book> books)
+    {
+        for(Book book : books)
+        {
+            System.out.println(book);
+        }
+    }
+
+    public void printAllBooksJson(JSONArray books)
+    {
+        for(Object arr : books)
+        {
+            System.out.println(arr);
+        }
+    }
+
     public boolean checkBookFound(Book book)
+    {
+        if(book != null)
+        {
+            System.out.println(Colours.GREEN + "Book found: "  + Colours.RESET + book);
+            return true;
+        }
+        else
+        {
+            System.out.println(Colours.RED + "No book with that id found" + Colours.RESET);
+            return false;
+        }
+    }
+
+    public boolean checkBookFoundJson(JSONObject book)
     {
         if(book != null)
         {

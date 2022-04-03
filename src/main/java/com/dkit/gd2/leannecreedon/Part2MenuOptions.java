@@ -4,7 +4,7 @@ public enum Part2MenuOptions
 {
     /* SYSTEM MENU OPTIONS - TEMPORARY! */
     PRINT_MENU,
-    PRINT_ALL_BOOKS,
-    CHECK_BOOK_FOUND,
+    ACCOUNT_MENU,
+    BOOKS_MENU,
     BACK_TO_MAIN;
 }

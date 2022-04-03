@@ -1,15 +1,16 @@
-package com.dkit.gd2.leannecreedon;
+package com.dkit.gd2.leannecreedon.DTO;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
-public class Patron
+public class Patron implements Comparable<Patron>
 {
     /* ATTRIBUTES */
 
     // TO LOG IN AFTER ACCOUNT IS CREATED
     // LAST_NAME, FIRST_NAME
-    private int libraryCardNumber;
-    private int pin;
+    private long libraryCardNumber;
+    private long pin;
 
     // TO CREATE ACCOUNT & GET LIBRARY CARD
     // ONCE ACCOUNT IS CREATED, USER IS SENT "LIBRARY
@@ -25,14 +26,14 @@ public class Patron
     private String eirCode;
     private String email;
     private String confirmEmail;
-    private int mobile;
+    private String mobile;
 
     /* CONSTRUCTORS */
 
     // Creating an account
     public Patron(String firstName, String lastName, int year, int month, int day, String gender,
                   String addressLine1, String addressLine2, String county, String eirCode,
-                  String email, String confirmEmail, int mobile)
+                  String email, String confirmEmail, String mobile, long pin, long libraryCardNumber)
     {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -45,6 +46,27 @@ public class Patron
         this.email = email;
         this.confirmEmail = confirmEmail;
         this.mobile = mobile;
+        this.pin = pin;
+        this.libraryCardNumber = libraryCardNumber;
+    }
+
+    public Patron(String firstName, String lastName, LocalDate dateOfBirth, String gender,
+                  String addressLine1, String addressLine2, String county, String eirCode,
+                  String email, String confirmEmail, String mobile, long pin, long libraryCardNumber)
+    {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.dateOfBirth = dateOfBirth;
+        this.gender = gender;
+        this.addressLine1 = addressLine1;
+        this.addressLine2 = addressLine2;
+        this.county = county;
+        this.eirCode = eirCode;
+        this.email = email;
+        this.confirmEmail = confirmEmail;
+        this.mobile = mobile;
+        this.pin = pin;
+        this.libraryCardNumber = libraryCardNumber;
     }
 
     // Logging in
@@ -57,11 +79,11 @@ public class Patron
     }
 
     // GETTERS
-    public int getLibraryCardNumber() {
+    public long getLibraryCardNumber() {
         return libraryCardNumber;
     }
 
-    public int getPin() {
+    public long getPin() {
         return pin;
     }
 
@@ -105,7 +127,7 @@ public class Patron
         return confirmEmail;
     }
 
-    public int getMobile() {
+    public String getMobile() {
         return mobile;
     }
 
@@ -127,5 +149,24 @@ public class Patron
                 ", confirmEmail='" + confirmEmail + '\'' +
                 ", mobile=" + mobile +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Patron p) {
+        return this.email.compareToIgnoreCase(p.email);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Patron patron = (Patron) o;
+        return Objects.equals(email, patron.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email);
     }
 }
