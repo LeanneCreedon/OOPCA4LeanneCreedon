@@ -76,6 +76,22 @@ public class Patrons
         }
     }
 
+    public boolean checkPatronFoundByPin(Long pin)
+    {
+        for(Patron patron : patronList)
+        {
+            if(patron.getPin() == pin)
+            {
+                System.out.println(Colours.GREEN + "Patron found: "  + Colours.RESET + patron);
+                return true;
+            }
+        }
+        System.out.println(Colours.RED + "No patron found" + Colours.RESET);
+        return false;
+    }
+
+    /* INPUT VALIDATION METHODS */
+
     public boolean checkUniqueEmail(String email)
     {
         for(Patron patron : patronList)
@@ -138,8 +154,7 @@ public class Patrons
     }
 
     // Generating random number for pin & library card number
-    // Help from this site =>
-    // https://stackoverflow.com/questions/37216645/generate-a-random-integer-with-a-specified-number-of-digits-java
+    // Got method from stack overflow page linked in app
     public long generateRandomNumber(int n)
     {
         long min = (long) Math.pow(10, n - 1);

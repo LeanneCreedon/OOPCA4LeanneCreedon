@@ -16,6 +16,7 @@ import java.util.List;
 
 public class MySqlPatronDAO extends MySqlDao implements IPatronInterface
 {
+    /* SOME FEATURES ARE TEMPORARY! */
 
     @Override
     public List<Patron> findAllPatrons() throws DaoException

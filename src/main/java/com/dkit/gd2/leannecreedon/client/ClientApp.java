@@ -1,5 +1,6 @@
-package com.dkit.gd2.leannecreedon;
+package com.dkit.gd2.leannecreedon.client;
 
+import com.dkit.gd2.leannecreedon.*;
 import com.dkit.gd2.leannecreedon.DAO.IBookInterface;
 import com.dkit.gd2.leannecreedon.DAO.IPatronInterface;
 import com.dkit.gd2.leannecreedon.DAO.MySqlBookDAO;
@@ -7,11 +8,20 @@ import com.dkit.gd2.leannecreedon.DAO.MySqlPatronDAO;
 import com.dkit.gd2.leannecreedon.DTO.Book;
 import com.dkit.gd2.leannecreedon.DTO.Patron;
 import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
+import com.dkit.gd2.leannecreedon.core.Details;
+import com.dkit.gd2.leannecreedon.core.Packet;
+import com.dkit.gd2.leannecreedon.core.Protocol;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.json.JSONObject;
 
+import java.io.*;
+import java.lang.reflect.Type;
+import java.net.Socket;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+
+import static com.dkit.gd2.leannecreedon.core.Details.SERVER_PORT;
 
 /**
  * References:
@@ -24,26 +34,189 @@ import java.util.Scanner;
  * Niall O'Reilly helped me => with the delete book DAO method that I was struggling to get working
  * Email regex help => https://www.w3schools.blog/validate-email-regular-expression-regex-java
  * Mobile phone regex help => https://stackoverflow.com/questions/16699007/regular-expression-to-match-standard-10-digit-phone-number
- *
+ * Random number generation help => https://stackoverflow.com/questions/37216645/generate-a-random-integer-with-a-specified-number-of-digits-java
  *
  *
  * CA5 - Leanne Creedon
  */
-public class App 
+public class ClientApp
 {
     private static final IBookInterface IBookDAO = new MySqlBookDAO();
     private static final IPatronInterface IPatronDAO = new MySqlPatronDAO();
     private static final Scanner keyboard = new Scanner(System.in);
     private static final Books books = new Books();
     private static final Patrons patrons = new Patrons();
+    private static Gson gson = new Gson();
 
     public static void main( String[] args )
     {
         System.out.println( "-- " + Colours.BOLD + "Library System" + Colours.RESET + " --\n");
-
-        mainMenu();
+        menu();
+        //mainMenu();
     }
 
+    private static void menu()
+    {
+        try
+        {
+            //Step 1: Establish a connection with the server
+            Socket dataSocket = new Socket("localhost", SERVER_PORT);
+            //Step 2: Build input and output streams linked to the socket
+            OutputStream out = dataSocket.getOutputStream();
+            PrintWriter output = new PrintWriter(new OutputStreamWriter(out));
+            InputStream in = dataSocket.getInputStream();
+            //An example of the Decorator design pattern
+            Scanner input = new Scanner(new InputStreamReader(in));
+            //Step 3: Get the input from the user
+            Scanner keyboard = new Scanner(System.in);
+            Protocol messageType = Protocol.NONE;
+            String message = "";
+            //Step 4: Depending on the input build a message, send it
+            // to the server and wait for a response
+            while(!message.equals(Protocol.END.name()))
+            {
+                displayMenu();
+                Protocol choice = getChoice(keyboard);
+                Packet outgoingPacket = new Packet(choice, message);
+                Packet responsePacket = new Packet(Protocol.NONE, null);
+                String response = "";
+                switch(choice)
+                {
+                    case DISPLAY_BOOK_BY_ID:
+
+                        String bookToSearch = bookById();
+
+                        //Send the message
+                        outgoingPacket.setPayload(bookToSearch);
+
+                        output.println(outgoingPacket.writeJSON());
+                        output.flush();
+
+                        //get the response
+                        responsePacket.readFromJSON(new JSONObject((input).nextLine()));
+                        //System.out.println("Response " + responsePacket);
+
+                        Book book = gson.fromJson(responsePacket.getPayload(), Book.class);
+                        books.checkBookFound(book);
+                        break;
+                    case DISPLAY_ALL_BOOKS:
+
+                        output.println(outgoingPacket.writeJSON());
+                        output.flush();
+
+                        //get the response
+                        responsePacket.readFromJSON(new JSONObject((input).nextLine()));
+
+                        Type ArrayList = new TypeToken<ArrayList<Book>>(){}.getType();
+                        books.setBookList(gson.fromJson(responsePacket.getPayload(), ArrayList));
+
+                        //books.displayArrayList(ArrayList);
+
+                        break;
+                    case ADD_A_PATRON:
+
+                        String patronToAdd = addPatron();
+
+                        //Send the message
+                        outgoingPacket.setPayload(patronToAdd);
+
+                        output.println(outgoingPacket.writeJSON());
+                        output.flush();
+
+                        //get the response
+                        responsePacket.readFromJSON(new JSONObject((input).nextLine()));
+                        Patron patron = gson.fromJson(responsePacket.getPayload(), Patron.class);
+                        System.out.println(Colours.GREEN + "Successfully created account: " + Colours.RESET + patron);
+
+                        break;
+                    case DELETE_A_PATRON:
+                        String patronToDelete = deletePatron();
+
+                        //Send the message
+                        outgoingPacket.setPayload(patronToDelete);
+
+                        output.println(outgoingPacket.writeJSON());
+                        output.flush();
+
+                        //get the response
+                        responsePacket.readFromJSON(new JSONObject((input).nextLine()));
+                        Patron patron2 = gson.fromJson(responsePacket.getPayload(), Patron.class);
+                        System.out.println(Colours.GREEN + "Successfully deleted account: " + Colours.RESET + patron2);
+
+                        break;
+                    case END:
+                        message = Protocol.END.name();
+                }
+                if(response.equals("Unrecognised"))
+                {
+                    System.out.println("Please choose an option from the menu");
+                }
+            }
+            System.out.println("Thank you for using the Library Service");
+            dataSocket.close();
+        }
+        catch (NoSuchElementException nse)
+        {
+            System.out.println(nse.getMessage());
+        }
+        catch(IOException ioe)
+        {
+            System.out.println(ioe.getMessage());
+        }
+    }
+
+    //Getting user input for client
+    private static String bookById()
+    {
+//        StringBuffer message = new StringBuffer(Protocol.DISPLAY_BOOK_BY_ID.name());
+//        message.append(Details.BREAKING_CHARACTERS);
+        System.out.println("Please enter book id: ");
+        String bookId = keyboard.nextLine();
+        return bookId;
+    }
+
+    private static void displayMenu()
+    {
+        System.out.println("-Library Application-\n" +
+                "Please choose one of the following options:\n" +
+                "1) To display book by Id\n" +
+                "2) To display all books\n" +
+                "3) To create an account\n" +
+                "4) To delete your account\n" +
+                "0) End App");
+    }
+
+    private static Protocol getChoice(Scanner keyboard)
+    {
+        Protocol choice = Protocol.END;
+        boolean validChoice = false;
+        while(!validChoice)
+        {
+            try
+            {
+                int input = keyboard.nextInt();
+                choice = Protocol.values()[input];
+                validChoice = true;
+            }
+            catch (InputMismatchException ime)
+            {
+                System.out.println("Please enter a valid menu option");
+                System.out.println();
+                displayMenu();
+            }
+            finally {
+                keyboard.nextLine();
+            }
+        }
+        return choice;
+    }
+
+
+
+    /* ORIGINAL SYSTEM METHODS*/
+
+
+    /* TEMPORARY MENUS */
     private static void printMainMenu()
     {
         System.out.println("Temporary menu system!");
@@ -236,7 +409,7 @@ public class App
                         filterBooksByDateRange();
                         break;
                     case FIND_ALL_BOOKS_JSON:
-                        printAllBooksJson();
+                        //printAllBooksJson();
                         break;
                     case FIND_BOOK_BY_ID_JSON:
                         books.checkBookFoundJson(searchForBookJson());
@@ -299,17 +472,17 @@ public class App
         }
     }
 
-    private static void printAllBooksJson()
-    {
-        try
-        {
-            books.printAllBooksJson(IBookDAO.findAllBooksJson());
-        }
-        catch(DaoException daoe)
-        {
-            System.out.println(daoe.getMessage());
-        }
-    }
+//    private static void printAllBooksJson()
+//    {
+//        try
+//        {
+//            books.printAllBooksJson(IBookDAO.findAllBooksJson());
+//        }
+//        catch(DaoException daoe)
+//        {
+//            System.out.println(daoe.getMessage());
+//        }
+//    }
 
     private static void filterBooksByDateRange()
     {
@@ -330,95 +503,80 @@ public class App
        }
     }
 
-    private static void deletePatron()
+    private static String deletePatron()
     {
         String confirmation;
-        try
+        Long pinNum = getUserInputLong("Please enter pin number: ");
+
+        //Patron patron = searchForPatronByPin();
+        if(patrons.checkPatronFoundByPin(pinNum))
         {
-            Patron patron = searchForPatronByPin();
-            if(patrons.checkPatronFound(patron))
+            confirmation = getUserInput(Colours.BOLD+"\nAre you sure you want to delete this account? (Yes/No) : "+Colours.RESET);
+            if(confirmation.equalsIgnoreCase("Yes"))
             {
-                confirmation = getUserInput(Colours.BOLD+"\nAre you sure you want to delete this account? (Yes/No) : "+Colours.RESET);
-                if(confirmation.equalsIgnoreCase("Yes"))
-                {
-                    IPatronDAO.deletePatronByPin(patron.getPin());
-                    System.out.println(Colours.GREEN + "Successfully deleted patron" + Colours.RESET);
-                }
-                else if(confirmation.equalsIgnoreCase("No"))
-                {
-                    System.out.println("-Account remains in system-");
-                }
-                else
-                {
-                    System.out.println(Colours.RED + "\nInvalid option - please try again" + Colours.RESET);
-                }
+                //IPatronDAO.deletePatronByPin(patron.getPin());
+                System.out.println(Colours.GREEN + "Successfully deleted patron" + Colours.RESET);
+            }
+            else if(confirmation.equalsIgnoreCase("No"))
+            {
+                System.out.println("-Account remains in system-");
+            }
+            else
+            {
+                System.out.println(Colours.RED + "\nInvalid option - please try again" + Colours.RESET);
             }
         }
-        catch (DaoException daoe)
-        {
-            System.out.println(daoe.getMessage());
-        }
+        return pinNum.toString();
     }
 
-    private static Patron searchForPatronByPin() throws DaoException {
-        int patronPin = getUserInputInteger("Please enter pin number: ");
-        return IPatronDAO.findPatronByPin(patronPin);
-    }
-
-    private static void addPatron()
+    private static String addPatron()
     {
-        try
-        {
-            System.out.println(Colours.BOLD+Colours.UNDERLINE+"\n-Personal Details-\n"+Colours.RESET);
-            String fName = getUserInput("Enter first name: ");
-            String lName = getUserInput("Enter last name: ");
-            LocalDate dob = getUserInputLocalDate("Enter your date of birth (Y/M/D): ");
-            keyboard.nextLine();
-            String gender = getUserInput("Enter your gender: ");
-            if(!(patrons.genderConfirmation(gender))) {
-                return;
-            }
-            System.out.println(Colours.BOLD+Colours.UNDERLINE+"\n-Residential Details-\n"+Colours.RESET);
-            String addressLine1 = getUserInput("Enter address line 1: ");
-            String addressLine2 = getUserInput("Enter address line 2: ");
-            String county = getUserInput("Enter county: ");
-            String eirCode = getUserInput("Enter your eirCode: ");
-            System.out.println(Colours.BOLD+Colours.UNDERLINE+"\n-Contact Details-\n"+Colours.RESET);
-            String email = getUserInput("Enter your email address: ");
-            if(!(patrons.checkUniqueEmail(email))) {
-                return;
-            }
-            if(!(patrons.checkEmailRegex(email))) {
-                return;
-            }
-            String confirmEmail = getUserInput("Please confirm your email: ");
-            if(!(email.equalsIgnoreCase(confirmEmail))) {
-                System.out.println(Colours.RED + "Confirmation email did not match original" + Colours.RESET);
-                return;
-            }
-            else {
-                System.out.println(Colours.GREEN + "Email confirmed" + Colours.RESET);
-            }
-            String mobile = getUserInput("Enter your mobile number: ");
-            if(!(patrons.checkMobileRegex(mobile))) {
-                return;
-            }
-            System.out.println(Colours.GREEN+"\nAccount Successfully created"+Colours.RESET);
-            System.out.println(Colours.BOLD+Colours.UNDERLINE+"\n-Login Details-\n"+Colours.RESET);
-            long pin = patrons.generateRandomNumber(4);
-            long libraryCardNum = patrons.generateRandomNumber(14);
-            Patron newPatron = new Patron(fName, lName, dob, gender, addressLine1, addressLine2, county, eirCode, email, confirmEmail, mobile, pin, libraryCardNum);
-            IPatronDAO.insertAPatron(newPatron);
-            System.out.println("Your Pin number is [ " + pin + " ]");
-            System.out.println("Your Library card number is [ " + libraryCardNum + " ]");
-            System.out.println("\nThank you for joining us!\n" +
-                               "Your Library card will be mailed out to you in the coming weeks.");
-            patrons.updatePatronList(newPatron);
+        System.out.println(Colours.BOLD+Colours.UNDERLINE+"\n-Personal Details-\n"+Colours.RESET);
+        String fName = getUserInput("Enter first name: ");
+        String lName = getUserInput("Enter last name: ");
+        LocalDate dob = getUserInputLocalDate("Enter your date of birth (Y/M/D): ");
+        keyboard.nextLine();
+        String gender = getUserInput("Enter your gender: ");
+        if(!(patrons.genderConfirmation(gender))) {
+            return null;
         }
-        catch (DaoException daoe)
-        {
-            System.out.println(daoe.getMessage());
+        System.out.println(Colours.BOLD+Colours.UNDERLINE+"\n-Residential Details-\n"+Colours.RESET);
+        String addressLine1 = getUserInput("Enter address line 1: ");
+        String addressLine2 = getUserInput("Enter address line 2: ");
+        String county = getUserInput("Enter county: ");
+        String eirCode = getUserInput("Enter your eirCode: ");
+        System.out.println(Colours.BOLD+Colours.UNDERLINE+"\n-Contact Details-\n"+Colours.RESET);
+        String email = getUserInput("Enter your email address: ");
+        if(!(patrons.checkUniqueEmail(email))) {
+            return null;
         }
+        if(!(patrons.checkEmailRegex(email))) {
+            return null;
+        }
+        String confirmEmail = getUserInput("Please confirm your email: ");
+        if(!(email.equalsIgnoreCase(confirmEmail))) {
+            System.out.println(Colours.RED + "Confirmation email did not match original" + Colours.RESET);
+            return null;
+        }
+        else {
+            System.out.println(Colours.GREEN + "Email confirmed" + Colours.RESET);
+        }
+        String mobile = getUserInput("Enter your mobile number: ");
+        if(!(patrons.checkMobileRegex(mobile))) {
+            return null;
+        }
+        System.out.println(Colours.GREEN+"\nAccount Successfully created"+Colours.RESET);
+        System.out.println(Colours.BOLD+Colours.UNDERLINE+"\n-Login Details-\n"+Colours.RESET);
+        long pin = patrons.generateRandomNumber(4);
+        long libraryCardNum = patrons.generateRandomNumber(14);
+        Patron newPatron = new Patron(fName, lName, dob, gender, addressLine1, addressLine2, county, eirCode, email, confirmEmail, mobile, pin, libraryCardNum);
+        //IPatronDAO.insertAPatron(newPatron);
+        System.out.println("Your Pin number is [ " + pin + " ]");
+        System.out.println("Your Library card number is [ " + libraryCardNum + " ]");
+        System.out.println("\nThank you for joining us!\n" +
+                           "Your Library card will be mailed out to you in the coming weeks.");
+        patrons.updatePatronList(newPatron);
+        return newPatron.toString();
     }
 
     private static void insertBook()
@@ -475,7 +633,8 @@ public class App
         }
     }
 
-    private static Book searchForBook() throws DaoException
+    // Search Methods
+    public static Book searchForBook() throws DaoException
     {
         int bookID = getUserInputInteger("Please enter book id: ");
         return IBookDAO.findBookById(bookID);
@@ -491,6 +650,12 @@ public class App
     {
         String patronEmail = getUserInput("Please enter user email: ");
         return IPatronDAO.findPatronByEmail(patronEmail);
+    }
+
+    private static Patron searchForPatronByPin() throws DaoException
+    {
+        int patronPin = getUserInputInteger("Please enter pin number: ");
+        return IPatronDAO.findPatronByPin(patronPin);
     }
 
     private static void retrieveBookByKey()
@@ -527,6 +692,12 @@ public class App
     {
         System.out.println(message);
         return Integer.parseInt(keyboard.nextLine());
+    }
+
+    private static long getUserInputLong(String message)
+    {
+        System.out.println(message);
+        return Long.parseLong(keyboard.nextLine());
     }
 
 }

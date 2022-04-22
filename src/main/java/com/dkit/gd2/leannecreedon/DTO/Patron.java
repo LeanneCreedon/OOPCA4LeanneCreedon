@@ -70,7 +70,7 @@ public class Patron implements Comparable<Patron>
     }
 
     // Logging in
-    public Patron(String lastName, String firstName, int libraryCardNumber, int pin)
+    public Patron(String lastName, String firstName, long libraryCardNumber, long pin)
     {
         this.lastName = lastName;
         this.firstName = firstName;
@@ -150,6 +150,8 @@ public class Patron implements Comparable<Patron>
                 ", mobile=" + mobile +
                 '}';
     }
+
+    // Comparing patron based on email as it is unique for each patron
 
     @Override
     public int compareTo(Patron p) {
