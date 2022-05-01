@@ -2,8 +2,7 @@ package com.dkit.gd2.leannecreedon.DAO;
 
 import com.dkit.gd2.leannecreedon.DTO.Book;
 import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
-import org.json.*;
-
+import com.google.gson.Gson;
 import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -14,6 +13,8 @@ import java.util.List;
 
 public class MySqlBookDAO extends MySqlDao implements IBookInterface
 {
+    /* DAO Methods - using table 'books' */
+
     @Override
     public List<Book> findAllBooks() throws DaoException
     {
@@ -148,6 +149,8 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
         return b;
     }
 
+    //Not a feature of the system anymore, decided I didn't want users to be
+    //able to remove books from the database.
     @Override
     public void deleteBookById(int id) throws DaoException
     {
@@ -196,6 +199,7 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
         }
     }
 
+    //Same as above, no longer feature of the system.
     @Override
     public void insertABook(Book book) throws DaoException
     {
@@ -317,86 +321,19 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
     }
 
     @Override
-    public JSONArray findAllBooksJson() throws DaoException
+    public List<Book> findBookUsingFilterByAuthor(String bookAuthor) throws DaoException
     {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        JSONObject bookAsJson;
-        JSONArray booksJsonArr = new JSONArray();
+        List<Book> authorsBooks = new ArrayList<>();
         try
         {
             // Get a connection to the database
             con = this.getConnection();
-            String query = "SELECT * FROM BOOKS";
+            String query = "SELECT * FROM BOOKS WHERE author = ?";
             ps = con.prepareStatement(query);
-
-            // Use the prepared statement to execute the sql
-            rs = ps.executeQuery();
-            while(rs.next())
-            {
-                int id = rs.getInt("id");
-                String title = rs.getString("title");
-                String author = rs.getString("author");
-                String status = rs.getString("status");
-                String genre = rs.getString("genre");
-                Date dateP = rs.getDate("date_published");
-                String publisher = rs.getString("publisher");
-                double rating = rs.getDouble("rating");
-                LocalDate datePublished = Instant.ofEpochMilli(dateP.getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-                bookAsJson = new JSONObject("{\"id\":\""+id+"\", " +
-                        "\"title\":\""+title+"\", \"author\":\""+author+"\", \"status\":\""+status+"\"," +
-                        " \"genre\":\""+genre+"\", \"date_published\":\""+datePublished+"\", \"publisher" +
-                        "\":\""+publisher+"\", \"rating\":\""+rating+"\"}");
-                booksJsonArr.put(bookAsJson);
-            }
-
-        }
-        catch(SQLException sqe)
-        {
-            throw new DaoException("findAllBooks() " + sqe.getMessage());
-        }
-        finally
-        {
-            try
-            {
-                if(rs != null)
-                {
-                    rs.close();
-                }
-                if(ps != null)
-                {
-                    ps.close();
-                }
-                if(con != null)
-                {
-                    freeConnection(con);
-                }
-            }
-            catch(SQLException sqe)
-            {
-                throw new DaoException("findAllBooks() " + sqe.getMessage());
-            }
-        }
-        return booksJsonArr;
-    }
-
-    @Override
-    public JSONObject findBookByIdJson(int id) throws DaoException
-    {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        JSONObject bookAsJson = null;
-        try
-        {
-            // Get a connection to the database
-            con = this.getConnection();
-            String query = "select * from books where id = ?";
-            ps = con.prepareStatement(query);
-            ps.setInt(1, id);
+            ps.setString(1, bookAuthor);
 
             // Use the prepared statement to execute the sql
             rs = ps.executeQuery();
@@ -410,13 +347,14 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
                 Date dateP = rs.getDate("date_published");
                 String publisher = rs.getString("publisher");
                 double rating = rs.getDouble("rating");
+
                 LocalDate datePublished = Instant.ofEpochMilli(dateP.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
-                bookAsJson = new JSONObject("{\"id\":\""+bookId+"\", " +
-                        "\"title\":\""+title+"\", \"author\":\""+author+"\", \"status\":\""+status+"\"," +
-                        " \"genre\":\""+genre+"\", \"date_published\":\""+datePublished+"\", \"publisher" +
-                        "\":\""+publisher+"\", \"rating\":\""+rating+"\"}");
+
+                Book b = new Book(bookId, title, author, status, genre, datePublished,
+                        publisher, rating);
+                authorsBooks.add(b);
             }
         }
         catch(SQLException sqe)
@@ -445,6 +383,39 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
                 throw new DaoException("findAllBooks() " + sqe.getMessage());
             }
         }
-        return bookAsJson;
+        return authorsBooks;
+    }
+
+    /* Converting results to JSON methods */
+    @Override
+    public String findAllBooksJson() throws DaoException
+    {
+        List<Book> books = findAllBooks();
+        return new Gson().toJson(books);
+    }
+
+    @Override
+    public String findBookUsingFilterJson(LocalDate from, LocalDate to) throws DaoException
+    {
+        List<Book> books = findBookUsingFilter(from,to);
+        return new Gson().toJson(books);
+    }
+
+    @Override
+    public String findBookUsingFilterByAuthorJson(String author) throws DaoException
+    {
+        List<Book> books = findBookUsingFilterByAuthor(author);
+        return new Gson().toJson(books);
+    }
+
+    @Override
+    public String findBookByIdJsonString(int id) throws DaoException
+    {
+        Book book = findBookById(id);
+
+        Gson parser = new Gson();
+        String bookS = parser.toJson(book);
+
+        return bookS;
     }
 }

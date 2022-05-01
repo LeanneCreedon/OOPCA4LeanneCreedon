@@ -1,14 +1,12 @@
 package com.dkit.gd2.leannecreedon.DAO;
 
-import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class MySqlDao
 {
-    public Connection getConnection() throws DaoException
+    public Connection getConnection()
     {
         String driver = "com.mysql.cj.jdbc.Driver";
         String url = "jdbc:mysql://localhost:3306/library_systemdb";
@@ -32,7 +30,7 @@ public class MySqlDao
         return con;
     }
 
-    public void freeConnection(Connection con) throws DaoException
+    public void freeConnection(Connection con)
     {
         try
         {

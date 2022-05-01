@@ -80,16 +80,16 @@ public class Book
 
     @Override
     public String toString() {
-        return "Book{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", author='" + author + '\'' +
-                ", status='" + status + '\'' +
-                ", genre='" + genre + '\'' +
-                ", datePublished=" + datePublished +
-                ", publisher='" + publisher + '\'' +
-                ", rating=" + rating +
-                '}';
+        return "{" +
+                "\"id\":" + id +
+                ",\"title\":\"" + title +"\"" +
+                ",\"author\":\"" + author + "\"" +
+                ",\"status\":\"" + status + "\"" +
+                ",\"genre\":\"" + genre + "\"" +
+                ",\"datePublished\":\"" + datePublished + '\"' +
+                ",\"publisher\":\"" + publisher + "\"" +
+                ",\"rating\":\"" + rating + "\"" +
+                "}";
     }
 
 }
