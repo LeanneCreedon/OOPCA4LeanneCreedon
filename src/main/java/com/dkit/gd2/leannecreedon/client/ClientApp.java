@@ -366,10 +366,14 @@ public class ClientApp
                         if(author==null) {
                             break;
                         }
-                        if(!(books.checkAuthorOnSystem(author))) {
-                            System.out.println(Colours.RED+"Author "+author+" not on system"+Colours.RESET);
-                            break;
-                        }
+
+                        //Didn't work. Allowed first author but if I tried again and used a valid author
+                        //it would return false. Couldn't get it working in time so left out this check.
+
+//                        if(!(books.checkAuthorOnSystem(author))) {
+//                            System.out.println(Colours.RED+"Author "+author+" not on system"+Colours.RESET);
+//                            break;
+//                        }
 
                         outgoingPacket.setPayload(author);
 

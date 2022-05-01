@@ -135,6 +135,7 @@ public class Books
         }
     }
 
+    //Didn't work for some reason...couldn't figure out why in time
     public boolean checkAuthorOnSystem(String author)
     {
         for(Book book : bookList)
