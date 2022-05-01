@@ -16,7 +16,6 @@ public class Server
             ServerSocket listeningSocket = new ServerSocket(Details.SERVER_PORT);
 
             boolean continueRunning = true;
-            int countRequests = 0;
 
             while(continueRunning)
             {

@@ -3,11 +3,6 @@ package com.dkit.gd2.leannecreedon.DAO;
 import com.dkit.gd2.leannecreedon.DTO.Book;
 import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.json.*;
-
 import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,7 +13,7 @@ import java.util.List;
 
 public class MySqlBookDAO extends MySqlDao implements IBookInterface
 {
-    /* SOME FEATURES ARE TEMPORARY! */
+    /* DAO Methods - using table 'books' */
 
     @Override
     public List<Book> findAllBooks() throws DaoException
@@ -154,6 +149,8 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
         return b;
     }
 
+    //Not a feature of the system anymore, decided I didn't want users to be
+    //able to remove books from the database.
     @Override
     public void deleteBookById(int id) throws DaoException
     {
@@ -202,6 +199,7 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
         }
     }
 
+    //Same as above, no longer feature of the system.
     @Override
     public void insertABook(Book book) throws DaoException
     {
@@ -323,6 +321,73 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
     }
 
     @Override
+    public List<Book> findBookUsingFilterByAuthor(String bookAuthor) throws DaoException
+    {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<Book> authorsBooks = new ArrayList<>();
+        try
+        {
+            // Get a connection to the database
+            con = this.getConnection();
+            String query = "SELECT * FROM BOOKS WHERE author = ?";
+            ps = con.prepareStatement(query);
+            ps.setString(1, bookAuthor);
+
+            // Use the prepared statement to execute the sql
+            rs = ps.executeQuery();
+            while(rs.next())
+            {
+                int bookId = rs.getInt("id");
+                String title = rs.getString("title");
+                String author = rs.getString("author");
+                String status = rs.getString("status");
+                String genre = rs.getString("genre");
+                Date dateP = rs.getDate("date_published");
+                String publisher = rs.getString("publisher");
+                double rating = rs.getDouble("rating");
+
+                LocalDate datePublished = Instant.ofEpochMilli(dateP.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
+                Book b = new Book(bookId, title, author, status, genre, datePublished,
+                        publisher, rating);
+                authorsBooks.add(b);
+            }
+        }
+        catch(SQLException sqe)
+        {
+            throw new DaoException("findAllBooks() " + sqe.getMessage());
+        }
+        finally
+        {
+            try
+            {
+                if(rs != null)
+                {
+                    rs.close();
+                }
+                if(ps != null)
+                {
+                    ps.close();
+                }
+                if(con != null)
+                {
+                    freeConnection(con);
+                }
+            }
+            catch(SQLException sqe)
+            {
+                throw new DaoException("findAllBooks() " + sqe.getMessage());
+            }
+        }
+        return authorsBooks;
+    }
+
+    /* Converting results to JSON methods */
+    @Override
     public String findAllBooksJson() throws DaoException
     {
         List<Book> books = findAllBooks();
@@ -330,8 +395,17 @@ public class MySqlBookDAO extends MySqlDao implements IBookInterface
     }
 
     @Override
-    public JSONObject findBookByIdJson(int id) throws DaoException {
-        return null;
+    public String findBookUsingFilterJson(LocalDate from, LocalDate to) throws DaoException
+    {
+        List<Book> books = findBookUsingFilter(from,to);
+        return new Gson().toJson(books);
+    }
+
+    @Override
+    public String findBookUsingFilterByAuthorJson(String author) throws DaoException
+    {
+        List<Book> books = findBookUsingFilterByAuthor(author);
+        return new Gson().toJson(books);
     }
 
     @Override

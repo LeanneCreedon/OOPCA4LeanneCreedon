@@ -12,6 +12,7 @@ import com.dkit.gd2.leannecreedon.DTO.Patron;
 import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -68,14 +69,30 @@ public class ClientAppTest
 
     // Test patron login.
     @Test
-    public void patronLogin()
+    public void loginTest1()
     {
-        System.out.println("\nTest : patron login.");
-        Patron patron= new Patron("O'Brian", "Mary", 0, 1234);
-        assertEquals("O'Brian", patron.getLastName());
-        assertEquals("Mary", patron.getFirstName());
-        assertEquals(0, patron.getLibraryCardNumber());
-        assertEquals(1234, patron.getPin());
+        System.out.println("\nTest : patron login true");
+        Patrons instance = new Patrons();
+        String lName = "Meegan";
+        String fName = "Vicky";
+        String lCard = "55246530458920";
+        String pin = "7298";
+        boolean expectedResult = true;
+        boolean result = instance.login(lName, fName, Long.parseLong(lCard), Long.parseLong(pin));
+        assertEquals(expectedResult, result);
+    }
+    @Test
+    public void loginTest2()
+    {
+        System.out.println("\nTest : patron login false");
+        Patrons instance = new Patrons();
+        String lName = "Meegan";
+        String fName = "Vicky";
+        String lCard = "55246530458920";
+        String pin = "1234"; // wrong pin, should result in false
+        boolean expectedResult = false;
+        boolean result = instance.login(lName, fName, Long.parseLong(lCard), Long.parseLong(pin));
+        assertEquals(expectedResult, result);
     }
 
     // Test part 2 check book found.
@@ -101,8 +118,8 @@ public class ClientAppTest
     public void checkBookFoundTest2()
     {
         try {
-            System.out.println("\nTest : checkBookFound method where id = 20.");
-            Book book = IBookDAO.findBookById(20);
+            System.out.println("\nTest : checkBookFound method where id = 58.");
+            Book book = IBookDAO.findBookById(58);
             Books instance = new Books();
             boolean expectedResult = false;
             boolean result = instance.checkBookFound(book);
@@ -144,12 +161,12 @@ public class ClientAppTest
         }
     }
 
-    // Test findPatronByEmail true
+    // Test findPatronByEmail
     @Test
     public void findPatronByEmailTest1()
     {
         try {
-            System.out.println("\nTest : findPatronByEmail() method.");
+            System.out.println("\nTest : findPatronByEmail() method test 1 - true");
             Patron patron = IPatronDAO.findPatronByEmail("vickyknowswhatsup@gmail.com");
             Patrons instance = new Patrons();
             boolean expectedResult = true;
@@ -161,13 +178,11 @@ public class ClientAppTest
             System.out.println(dao.getMessage());
         }
     }
-
-    // Test findPatronByEmail false
     @Test
     public void findPatronByEmailTest2()
     {
         try {
-            System.out.println("\nTest : findPatronByEmail() method.");
+            System.out.println("\nTest : findPatronByEmail() method test 2 - false");
             Patron patron = IPatronDAO.findPatronByEmail("jimmymartin@hotmail.com");
             Patrons instance = new Patrons();
             boolean expectedResult = false;
@@ -180,4 +195,123 @@ public class ClientAppTest
         }
     }
 
+    // Test findBookUsingFilter()
+    @Test
+    public void findBookUsingFilter()
+    {
+        try {
+            System.out.println("\nTest : findBookUsingFilter() method.");
+            LocalDate from = LocalDate.parse("1998-08-23");
+            LocalDate to = LocalDate.parse("2016-09-20");
+            List<Book> filteredBooks = IBookDAO.findBookUsingFilter(from, to);
+            Books instance = new Books();
+            boolean expectedResult = true;
+            boolean result = instance.printBookList(filteredBooks);
+            assertEquals(expectedResult, result);
+        }
+        catch(DaoException dao)
+        {
+            System.out.println(dao.getMessage());
+        }
+    }
+
+    // Test getCurrentAccountEmail().
+    @Test
+    public void getAccountEmailTest1()
+    {
+        System.out.println("\nTest : getCurrentAccountEmail() method test 1 - correct details");
+        Patrons instance = new Patrons();
+        String lCard = "55246530458920";
+        String pin = "7298";
+        String expectedResult = "vickyknowswhatsup@gmail.com";
+        String result = instance.getCurrentAccountEmail(Long.parseLong(lCard), Long.parseLong(pin));
+        assertEquals(expectedResult, result);
+    }
+    @Test
+    public void getAccountEmailTest2()
+    {
+        System.out.println("\nTest : getCurrentAccountEmail() method test 1 - incorrect details");
+        Patrons instance = new Patrons();
+        String lCard = "55246530458920";
+        String pin = "1234";
+        String expectedResult = null;
+        String result = instance.getCurrentAccountEmail(Long.parseLong(lCard), Long.parseLong(pin));
+        assertEquals(expectedResult, result);
+    }
+
+    // Test checkPatronFoundByEmail().
+    @Test
+    public void checkPatronFoundByEmailTest1()
+    {
+        System.out.println("\nTest : checkPatronFoundByEmail() method test 1 - true");
+        Patrons instance = new Patrons();
+        String email = "vickyknowswhatsup@gmail.com";
+        boolean expectedResult = true;
+        boolean result = instance.checkPatronFoundByEmail(email);
+        assertEquals(expectedResult, result);
+    }
+    @Test
+    public void checkPatronFoundByEmailTest2()
+    {
+        System.out.println("\nTest : checkPatronFoundByEmail() method test 2 - false");
+        Patrons instance = new Patrons();
+        String email = "hello@hotmail.com";
+        boolean expectedResult = false;
+        boolean result = instance.checkPatronFoundByEmail(email);
+        assertEquals(expectedResult, result);
+    }
+
+    // Test checkPatronFound().
+    @Test
+    public void checkPatronFoundTest1()
+    {
+        System.out.println("\nTest : checkPatronFound() method test 1 - true");
+        Patrons instance = new Patrons();
+        String pin = "7298";
+        String lCard = "55246530458920";
+        Patron patron= new Patron("Vicky", "Meegan", 1998, 8, 23, "Female",
+                "14 Ard Easmuinn", "Dundalk", "Co. Louth", "A23KJ54",
+                "vickyknowswhatsup@gmail.com", "vickyknowswhatsup@gmail.com", "836593384",
+                Long.parseLong(pin), Long.parseLong(lCard));
+        boolean expectedResult = true;
+        boolean result = instance.checkPatronFound(patron);
+        assertEquals(expectedResult, result);
+    }
+    @Test
+    public void checkPatronFoundTest2()
+    {
+        System.out.println("\nTest : checkPatronFound() method test 2 - false");
+        Patrons instance = new Patrons();
+        String pin = "1234";
+        String lCard = "17296748372955";
+        Patron patron= new Patron("Jimmy", "McBride", 1998, 8, 23, "Male",
+                "14 Ard Easmuinn", "Dundalk", "Co. Louth", "A23KJ54",
+                "jimmy@gmail.com", "jimmy@gmail.com", "836593384",
+                Long.parseLong(pin), Long.parseLong(lCard));
+        boolean expectedResult = false;
+        boolean result = instance.checkPatronFound(patron);
+        assertEquals(expectedResult, result);
+    }
+
+    // Test checkAuthorOnSystem().
+    @Test
+    public void checkAuthorOnSystemTest1()
+    {
+        System.out.println("\nTest : checkAuthorOnSystem() method test 1 - true");
+        Books instance = new Books();
+        String author = "J.R.R. Tolkien";
+        boolean expectedResult = true;
+        boolean result = instance.checkAuthorOnSystem(author);
+        assertEquals(expectedResult, result);
+    }
+    @Test
+    public void checkAuthorOnSystemTest2()
+    {
+        System.out.println("\nTest : checkAuthorOnSystem() method test 2 - false");
+        Books instance = new Books();
+        String author = "Rold Dahl";
+        boolean expectedResult = false;
+        boolean result = instance.checkAuthorOnSystem(author);
+        assertEquals(expectedResult, result);
+    }
 }

@@ -1,7 +1,11 @@
 package com.dkit.gd2.leannecreedon.DAO;
 
+import com.dkit.gd2.leannecreedon.DTO.Book;
 import com.dkit.gd2.leannecreedon.DTO.Patron;
 import com.dkit.gd2.leannecreedon.Exceptions.DaoException;
+import com.fatboyindustrial.gsonjavatime.Converters;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,7 +20,7 @@ import java.util.List;
 
 public class MySqlPatronDAO extends MySqlDao implements IPatronInterface
 {
-    /* SOME FEATURES ARE TEMPORARY! */
+    /* DAO Methods - using table 'patrons' */
 
     @Override
     public List<Patron> findAllPatrons() throws DaoException
@@ -156,75 +160,7 @@ public class MySqlPatronDAO extends MySqlDao implements IPatronInterface
     }
 
     @Override
-    public Patron findPatronByPin(long pinNumber) throws DaoException
-    {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        Patron p = null;
-        try
-        {
-            // Get a connection to the database
-            con = this.getConnection();
-            String query = "select * from patrons where pin = ?";
-            ps = con.prepareStatement(query);
-            ps.setLong(1, pinNumber);
-
-            // Use the prepared statement to execute the sql
-            rs = ps.executeQuery();
-            while(rs.next())
-            {
-                String fname = rs.getString("first_name");
-                String lname = rs.getString("last_name");
-                Date dob = rs.getDate("date_of_birth");
-                String gender = rs.getString("gender");
-                String addressLine1 = rs.getString("address_line1");
-                String addressLine2 = rs.getString("address_line2");
-                String county = rs.getString("county");
-                String eirCode = rs.getString("eir_code");
-                String patronEmail = rs.getString("email");
-                String confirmEmail = rs.getString("confirm_email");
-                String mobile = rs.getString("mobile");
-                long pin = rs.getLong("pin");
-                long libraryCardNum = rs.getLong("library_card_number");
-                LocalDate dateOfBirth = Instant.ofEpochMilli(dob.getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-
-                p = new Patron(fname, lname, dateOfBirth, gender, addressLine1, addressLine2, county, eirCode, patronEmail, confirmEmail, mobile, pin, libraryCardNum);
-            }
-        }
-        catch(SQLException sqe)
-        {
-            throw new DaoException("findAllPatrons() " + sqe.getMessage());
-        }
-        finally
-        {
-            try
-            {
-                if(rs != null)
-                {
-                    rs.close();
-                }
-                if(ps != null)
-                {
-                    ps.close();
-                }
-                if(con != null)
-                {
-                    freeConnection(con);
-                }
-            }
-            catch(SQLException sqe)
-            {
-                throw new DaoException("findAllPatrons() " + sqe.getMessage());
-            }
-        }
-        return p;
-    }
-
-    @Override
-    public void deletePatronByPin(long pin) throws DaoException
+    public void deletePatronByEmail(String email) throws DaoException
     {
         Connection con = null;
         PreparedStatement ps = null;
@@ -233,9 +169,9 @@ public class MySqlPatronDAO extends MySqlDao implements IPatronInterface
         {
             // Get a connection to the database
             con = this.getConnection();
-            String query = "delete from patrons where pin = ?";
+            String query = "delete from patrons where email = ?";
             ps = con.prepareStatement(query);
-            ps.setLong(1, pin);
+            ps.setString(1, email);
 
             // Use the prepared statement to execute the sql
             ps.executeUpdate();
@@ -327,4 +263,16 @@ public class MySqlPatronDAO extends MySqlDao implements IPatronInterface
             }
         }
     }
+
+    @Override
+    public String findPatronByEmailJsonString(String email) throws DaoException
+    {
+        Patron patron = findPatronByEmail(email);
+
+        Gson parser = new Gson();
+        String patronS = parser.toJson(patron);
+
+        return patronS;
+    }
+
 }

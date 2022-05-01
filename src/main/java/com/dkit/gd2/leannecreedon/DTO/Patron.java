@@ -9,24 +9,24 @@ public class Patron implements Comparable<Patron>
 
     // TO LOG IN AFTER ACCOUNT IS CREATED
     // LAST_NAME, FIRST_NAME
-    private long libraryCardNumber;
-    private long pin;
+    private final long libraryCardNumber;
+    private final long pin;
 
     // TO CREATE ACCOUNT & GET LIBRARY CARD
     // ONCE ACCOUNT IS CREATED, USER IS SENT "LIBRARY
     // CARD", AKA A LIBRARY NUMBER & PIN.
     // WITH THAT INFO THEY CAN LOG IN TO THE SYSTEM.
-    private String firstName;
-    private String lastName;
-    private LocalDate dateOfBirth;
-    private String gender;
-    private String addressLine1;
-    private String addressLine2;
-    private String county;
-    private String eirCode;
-    private String email;
-    private String confirmEmail;
-    private String mobile;
+    private final String firstName;
+    private final String lastName;
+    private final LocalDate dateOfBirth;
+    private final String gender;
+    private final String addressLine1;
+    private final String addressLine2;
+    private final String county;
+    private final String eirCode;
+    private final String email;
+    private final String confirmEmail;
+    private final String mobile;
 
     /* CONSTRUCTORS */
 
@@ -67,15 +67,6 @@ public class Patron implements Comparable<Patron>
         this.mobile = mobile;
         this.pin = pin;
         this.libraryCardNumber = libraryCardNumber;
-    }
-
-    // Logging in
-    public Patron(String lastName, String firstName, long libraryCardNumber, long pin)
-    {
-        this.lastName = lastName;
-        this.firstName = firstName;
-        this.libraryCardNumber = libraryCardNumber;
-        this.pin = pin;
     }
 
     // GETTERS
@@ -134,21 +125,21 @@ public class Patron implements Comparable<Patron>
     // ToString()
     @Override
     public String toString() {
-        return "Patron{" +
-                "libraryCardNumber=" + libraryCardNumber +
-                ", pin=" + pin +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", dateOfBirth=" + dateOfBirth +
-                ", gender='" + gender + '\'' +
-                ", addressLine1='" + addressLine1 + '\'' +
-                ", addressLine2='" + addressLine2 + '\'' +
-                ", county='" + county + '\'' +
-                ", eirCode='" + eirCode + '\'' +
-                ", email='" + email + '\'' +
-                ", confirmEmail='" + confirmEmail + '\'' +
-                ", mobile=" + mobile +
-                '}';
+        return "{" +
+                "\"libraryCardNumber\":" + libraryCardNumber +
+                ",\"pin\":\"" + pin +"\"" +
+                ",\"firstName\":\"" + firstName + "\"" +
+                ",\"lastName\":\"" + lastName + "\"" +
+                ",\"dateOfBirth\":\"" + dateOfBirth + "\"" +
+                ",\"gender\":\"" + gender + '\"' +
+                ",\"addressLine1\":\"" + addressLine1 + "\"" +
+                ",\"addressLine2\":\"" + addressLine2 + "\"" +
+                ",\"county\":\"" + county + "\"" +
+                ",\"eirCode\":\"" + eirCode + "\"" +
+                ",\"email\":\"" + email + "\"" +
+                ",\"confirmEmail\":\"" + confirmEmail + "\"" +
+                ",\"mobile\":" + mobile +
+                "}";
     }
 
     // Comparing patron based on email as it is unique for each patron

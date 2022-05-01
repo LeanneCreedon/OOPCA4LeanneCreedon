@@ -1,6 +1,5 @@
 package com.dkit.gd2.leannecreedon.server;
 
-import com.dkit.gd2.leannecreedon.core.Details;
 import com.dkit.gd2.leannecreedon.core.Packet;
 import com.dkit.gd2.leannecreedon.core.Protocol;
 import org.json.JSONObject;
@@ -23,18 +22,14 @@ public class ThreadPerClient implements Runnable
     {
         try
         {
-            //Step 3: Build the input and output streams linked to the dataSocket
             OutputStream out = dataSocket.getOutputStream();
             PrintWriter output = new PrintWriter(new OutputStreamWriter(out));
 
             InputStream in = dataSocket.getInputStream();
-            //An example of the Decorator design pattern
             Scanner input = new Scanner(new InputStreamReader(in));
 
             Packet incomingPacket = new Packet(Protocol.NONE, null);
-            String message;
             Packet response;
-            boolean sendMessage = false;
 
             while (!incomingPacket.getMessageType().equals(Protocol.END))
             {
