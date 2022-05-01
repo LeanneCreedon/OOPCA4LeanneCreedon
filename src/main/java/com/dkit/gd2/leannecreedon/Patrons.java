@@ -91,17 +91,14 @@ public class Patrons
         return false;
     }
 
-    public void checkPatronAdded(Patron patronToAdd)
+    public void checkPatronAdded(Patron patron)
     {
-        for(Patron patron : patronList)
+        if(patron != null) {
+            System.out.println(Colours.GREEN + "Account Successfully Created"  + Colours.RESET);
+        }
+        else
         {
-            if(patron == patronToAdd) {
-                System.out.println(Colours.GREEN + "Account Successfully Created"  + Colours.RESET);
-            }
-            else
-            {
-                System.out.println(Colours.RED + "Error adding account - please try again" + Colours.RESET);
-            }
+            System.out.println(Colours.RED + "Error adding account - please try again" + Colours.RESET);
         }
     }
 
