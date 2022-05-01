@@ -334,6 +334,10 @@ public class ClientApp
                         if(toDate==null) {
                             break;
                         }
+                        if(fromDate.isAfter(toDate)) {
+                            System.out.println(Colours.RED+"Invalid date range - please try again"+Colours.RESET);
+                            break;
+                        }
 
                         String dates = fromDate+"&&"+toDate;
 
